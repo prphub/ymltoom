@@ -20,23 +20,17 @@ type Valute struct {
 func main() {
 	filename, _ := filepath.Abs("./currencies.yml")
 	yamlFile, err := ioutil.ReadFile(filename)
-
 	y := Message{}
-
 	err = yaml.Unmarshal(yamlFile, &y)
-
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
-
-	fmt.Printf("%+v\n", y)
-
 	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, y)
+		for _, s := range y.Currencies {
+			fmt.Fprintf(w, `currency{name="%s"} %s`, s.Name, s.Value)
+			fmt.Fprintf(w, "\n")
+		}
 	})
 	fmt.Println("Server is listening...")
 	http.ListenAndServe("localhost:8080", nil)
-
 }
-
-//   currency{name="usd"} 70
